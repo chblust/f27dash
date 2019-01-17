@@ -1,4 +1,5 @@
-#include "uart.h"
+#include "usart.h"
+#include <avr/io.h>
 
 /*
  * Set the baud rate and enable the USART 1 functionalities specified.

@@ -12,6 +12,6 @@ void USART1Init( unsigned int baudValue, int tx, int rx );
 
 void USART1Transmit( unsigned char data );
 
-unsigned char USART1Receive();
+char USART1Receive();
 
 #endif /* USART_H_ */
