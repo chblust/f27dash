@@ -1,6 +1,8 @@
 #ifndef LIGHTCONTROL_H
 #define LIGHTCONTROL_H
 
+#include <stdint.h>
+
 #define MAX_RPM 10500
 
 #define LED_COUNT 64
@@ -43,5 +45,7 @@ void setDRS( unsigned char state );
 void setHold( unsigned char state );
 
 void setGearPosition( unsigned short int position );
+
+void writeBinary( uint32_t num );
 
 #endif // LIGHTCONTROL_H

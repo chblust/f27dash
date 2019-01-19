@@ -1,5 +1,6 @@
 #include "lightControl.h"
 #include "shiftRegisters.h"
+#include <stdint.h>
 
 // Internal model of the LED states
 static unsigned char ledStates[ LED_COUNT ];
@@ -109,6 +110,16 @@ void setGearPosition( unsigned short int position )
 	for( unsigned short int i = SEGMENT_DISPLAY_START_LED; i < SEGMENT_DISPLAY_LED_COUNT; ++i )
 	{
 		ledStates[ i ] = segmentPatterns[ position - 1 ][ i - SEGMENT_DISPLAY_START_LED ];
+	}
+}
+
+void writeBinary( uint32_t num )
+{
+	uint8_t pos = 0;
+	for( uint8_t i = SHIFT_LIGHT_COUNT - 1; i > 17; --i )
+	{
+		ledStates[ i ] = (num & ( 1 << pos )) != 0;
+		++pos;
 	}
 }
 
