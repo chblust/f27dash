@@ -1,0 +1,1 @@
+../olimex.sh test.hex

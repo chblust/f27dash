@@ -11,7 +11,7 @@ static unsigned char segmentPatterns[ NUM_GEARS ][ SEGMENT_DISPLAY_LED_COUNT ] =
 	{ 0, 0, 0, 0, 0, 0, 0, 0},
 	{ 0, 0, 0, 0, 0, 0, 0, 0},
 	{ 0, 0, 0, 0, 0, 0, 0, 0},
-	{ 0, 0, 0, 0, 0, 0, 0, 0}
+	{ 0, 1, 0, 1, 0, 1, 0, 1}
 };
 
 /*

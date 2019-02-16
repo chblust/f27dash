@@ -5,13 +5,25 @@
  *  Author: Chris Blust
  */ 
 
-#ifndef USART_H_
-#define USART_H_
+#ifndef USART_H
+#define USART_H
 
-void USART1Init( unsigned int baudValue, int tx, int rx );
+// Determines the correct baud rate register values for the given CPU
+// speed at 9600 baud.
+#if F_CPU == 16000000UL
+	#define USART_BAUD_VALUE 103
+#else // Must be 8000000UL
+	#define USART_BAUD_VALUE 51
+#endif
 
-void USART1Transmit( unsigned char data );
+void USART1Init( int tx, int rx );
+
+void USART1Transmit( char data );
+
+void USART1WriteString( char * data );
+
+void USART1WriteStringDangerous( char * data, unsigned int length );
 
 char USART1Receive();
 
-#endif /* USART_H_ */
+#endif /* USART_H */

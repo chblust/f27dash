@@ -5,20 +5,22 @@
  * Author : chb4299
  */ 
 
-#define F_CPU 8000000UL
-
 #include "lightControl.h"
+#include "can.h"
+#include "usart.h"
+
 #include <util/delay.h>
 
 int main(void)
 {
-	uint32_t i = 0;
-	while( 1 )
+	initCAN();
+	
+	USART1Init(1, 1);
+
+
+	while(1)
 	{
-		writeBinary( i );
-		updateLights();
-		//_delay_ms(25);
-		++i;
+		
 	}
 }
 

@@ -7,7 +7,6 @@
 
 #include "shiftRegisters.h"
 #include "port.h"
-#define F_CPU 8000000UL
 #include <util/delay.h>
 
 /*
@@ -35,6 +34,7 @@ void shiftData( unsigned char data )
 void setSROutputs()
 {
 	writePortA( STROBE, 1 );
+	_delay_us( SHIFT_DELAY );
 	writePortA( STROBE, 0 );
 }
 
@@ -52,4 +52,3 @@ void shiftPattern( unsigned char * pattern, unsigned int length )
 
 	setSROutputs();
 }
-
