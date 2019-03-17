@@ -1,0 +1,11 @@
+0x10 - 16 bit, shift lights start value (RPM)
+
+0x20 - 8 bit, water temperature warning threshold
+0x21 - 8 bit, water temperature error threshold
+0x22 - 8 bit, water temperature histeresis
+
+0x30 - 8 bit, oil pressure warning threshold
+0x31 - 8 bit, oil pressure error threshold
+0x32 - 8 bit, oil pressure histeresis
+
+0x40 - 8 bit, water temperature hold-until threshold

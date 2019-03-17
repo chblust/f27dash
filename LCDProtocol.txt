@@ -1,0 +1,19 @@
+Message format:
+
+- All values represented in big endian hexadecimal
+
+
+MRRRROOWWPPFFTTGLX
+
+M = ‘M’, message start designator
+
+RRRR = RPM - (1 RPM / bit)
+OO = Oil Temperature 
+WW = Water Temperature
+PP = Oil Pressure
+FF = Flow Control
+TT = Turbo Oil Pressure
+G = Gear Position
+L = Lambda Control
+
+X = ‘X’, message end designator
