@@ -5,8 +5,8 @@
 #include "can.h"
 #include <stdint.h>
 
-#define ECU_MSG_1 0x00FF
-#define ECU_MSG_2 0x00FC
+#define ECU_MSG_1 0x0091
+#define ECU_MSG_2 0x00A0
 #define ECU_MSG_3 0x00FD
 #define ECU_MSG_4 0x00FB
 
@@ -21,10 +21,13 @@
 #define WATERT_LSB 3
 #define OILP_LSB 4
 #define GEAR_LSB 5
+#define BATT_MSB 6
+#define BATT_LSB 7
 
 // ECU_MSG_2
-#define BATT_MSB 0
-#define BATT_LSB 1
+#define TOILP_MSB 0
+#define LCTL 1
+#define FLC_MSB 2
 
 // Pairs a CAN message with its associated handler function
 typedef struct 

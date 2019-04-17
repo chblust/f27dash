@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#define MAX_RPM 10500
-
 #define LED_COUNT 64
 
 #define SHIFT_LIGHT_COUNT 50
@@ -32,11 +30,13 @@
 
 void updateLights();
 
-void setRPM( unsigned int rpm );
+void shiftAll();
+
+void setRPM( uint8_t percentLit );
 
 void setAutoUp( unsigned char state );
 
-void setCriticalError( unsigned char state );
+void setError( unsigned char state );
 
 void setWarning( unsigned char state );
 
@@ -47,5 +47,11 @@ void setHold( unsigned char state );
 void setGearPosition( unsigned short int position );
 
 void writeBinary( uint32_t num );
+
+void write7Seg( int s0, int s1, int s2, int s3, int s4, int s5, int s6, int s7 );
+
+void lightShow();
+
+void clearRPM();
 
 #endif // LIGHTCONTROL_H

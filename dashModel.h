@@ -14,6 +14,11 @@ typedef struct
 	uint8_t lambdaControl;
 	uint8_t DRS;
 	uint8_t autoUp;
+	uint8_t flowControl;
+	uint8_t turboOilPressure;
+	uint16_t voltage;
 } DashModel;
+
+void defaultDashModel( DashModel* model );
 
 #endif // DASH_MODEL_H

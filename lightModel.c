@@ -1,65 +1,47 @@
 #include "lightModel.h"
+#include "CriticalParameter.h"
+#include "configuration.h"
 
 #include <stdint.h>
 
-// Thresholds for setting the error/warning lights on the dash.
-// TODO - define dynamically
-static uint8_t waterTWarning = 120;
-static uint8_t waterTError = 135;
-static uint8_t oilPWarning = 8;
-static uint8_t oilPError = 4;
-
-static uint8_t waterTHold = 80;
-static uint8_t oilPHisteresis = 1;
-static uint8_t waterTHisteresis = 5;
-
-void createLightModel( LightModel * lightModel, DashModel * dashModel )
+/**
+ * Set light values in a given light Model to represent the provided
+ * car data.
+ * @param[in] lightModel - the given light model
+ * @param[in] dashModel - the provided car data
+ *
+ */
+void updateLightModel( LightModel * lightModel, DashModel * dashModel )
 {
-	lightModel->RPM = dashModel->RPM;
+	// Don't light up any shift lights if the RPM is below the configured value
+	if( dashModel->RPM < getShiftLightStart() )
+	{
+		lightModel->RPM = 0;
+	}
+	else
+	{
+		// Simple linear function for the shift lights
+		lightModel->RPM = 100 * ((float)(dashModel->RPM-getShiftLightStart())/(MAX_RPM - getShiftLightStart()));
+	}
 
 	lightModel->gear = dashModel->gear;
 
-	// If there's already an error, check whether it's for oilP or waterT
-	if( lightModel->error )
+	CriticalParameter* waterTemperature = getWaterTemperatureParameter();
+	CriticalParameter* oilPressure = getOilPressureParameter();
+
+	updateParameter( waterTemperature, dashModel->waterTemperature );
+	updateParameter( oilPressure, dashModel->oilPressure );
+
+	if( waterTemperature->state == ERROR || oilPressure->state == ERROR )
 	{
-		// Apply waterT histeresis
-		if( dashModel->waterTemperature < waterTError - waterTHisteresis )
-		{
-			lightModel->error = 0;
-		}
-		// Apply oilP histeresis
-		else if( dashModel->oilPressure > oilPError + oilPHisteresis )
-		{
-			lightModel->error = 0;
-		}
-	}
-	// If no error, check if there should be one
-	else if( dashModel->oilPressure < oilPError ||
-			 dashModel->waterTemperature > waterTError )
-	{
-		lightModel->warning = 0;
 		lightModel->error = 1;
+		lightModel->warning = 0;
 	}
-	// If no error still, check if there's already a warning and determine source
-	else if( lightModel->warning )
+	else if( waterTemperature->state == WARNING || oilPressure->state == WARNING )
 	{
-		if( dashModel->waterTemperature < waterTWarning - waterTHisteresis )
-		{
-			lightModel->error = 0;
-		}
-		else if( dashModel->oilPressure > oilPWarning + oilPHisteresis )
-		{
-			lightModel->error = 0;
-		}
-	}
-	// If no warning, check if there should be one
-	else if (dashModel->oilPressure < oilPWarning ||
-			dashModel->waterTemperature > waterTWarning )
-	{
-		lightModel->error = 0;
 		lightModel->warning = 1;
+		lightModel->error = 0;
 	}
-	// All clear
 	else
 	{
 		lightModel->error = 0;
@@ -73,5 +55,20 @@ void createLightModel( LightModel * lightModel, DashModel * dashModel )
 	// Hold could use histeresis (for water T) but it probably won't go back down
 	// below threshold during a driving period.
 	lightModel->hold |= !dashModel->lambdaControl;
-	lightModel->hold |= dashModel->waterTemperature < waterTHold;
+	lightModel->hold |= dashModel->waterTemperature < getWaterTHold();
+}
+
+/**
+ * Zero out the values of a given light model to avoid unintented light shows.
+ * @param[in] lightModel - the given light model
+ *
+ */
+void defaultLightModel( LightModel* lightModel )
+{
+	lightModel->RPM = 0;
+	lightModel->gear = 0;
+	lightModel->DRS = 0;
+	lightModel->warning = 0;
+	lightModel->error = 0;
+	lightModel->hold = 0;
 }

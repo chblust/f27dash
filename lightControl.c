@@ -1,17 +1,29 @@
 #include "lightControl.h"
 #include "shiftRegisters.h"
+#include <util/delay.h>
+
+#ifdef DEBUG
+	#include "can.h"
+#endif
+
+
 #include <stdint.h>
 
 // Internal model of the LED states
 static unsigned char ledStates[ LED_COUNT ];
 
-// TODO - define patterns
+// The current number of lights lit up representing RPM
+static uint8_t currentNumLights = 0;
+
+static uint8_t currentGear = 0;
+
 // Shift register output patterns that produce decimal digits on 7 segment display
-static unsigned char segmentPatterns[ NUM_GEARS ][ SEGMENT_DISPLAY_LED_COUNT ] = {
-	{ 0, 0, 0, 0, 0, 0, 0, 0},
-	{ 0, 0, 0, 0, 0, 0, 0, 0},
-	{ 0, 0, 0, 0, 0, 0, 0, 0},
-	{ 0, 1, 0, 1, 0, 1, 0, 1}
+static unsigned char segmentPatterns[ NUM_GEARS + 1][ SEGMENT_DISPLAY_LED_COUNT ] = {
+	{ 1, 0, 1, 0, 1, 0, 0, 0},
+	{ 0, 0, 0, 0, 1, 0, 0, 1},
+	{ 1, 0, 1, 1, 0, 0, 1, 1},
+	{ 1, 0, 0, 1, 1, 0, 1, 1},
+	{ 1, 1, 0, 0, 1, 0, 0, 1}
 };
 
 /*
@@ -20,29 +32,86 @@ static unsigned char segmentPatterns[ NUM_GEARS ][ SEGMENT_DISPLAY_LED_COUNT ] =
  */
 void updateLights()
 {
+	#ifdef DEBUG
+
+	// Count lights
+	uint8_t count = 0;
+	for( uint8_t i = 0; i < 50; ++i )
+	{
+		if( ledStates[ i ] == 1 )
+		{
+			count++;
+		}
+	}
+
+
+	CANMessage message;
+	message.id = 0xAB;
+	message.data[0] = count;
+	message.data[1] = ledStates[ AUTO_UP_LED_1 ];
+	message.data[2] = ledStates[ AUTO_UP_LED_2 ];
+	message.data[3] = ledStates[ CRITICAL_ERROR_LED ];
+	message.data[4] = ledStates[ WARNING_LED ];
+	message.data[5] = ledStates[ DRS_LED ];
+	message.data[6] = ledStates[ HOLD_LED ];
+	message.data[7] = currentGear;
+	message.length = 8;
+	sendCAN( &message );
+
+	#endif
+
 	shiftPattern( ledStates, LED_COUNT );
 }
 
 /*
- * Based on a given RPM reading, change the internal model of the shift lights.
- * @param[in] rpm - 0-10500, the given RPM
+ * It's gettin hot in here
  *
  */
-void setRPM( unsigned int rpm )
+void shiftAll()
 {
-	unsigned int numLights = ((float) rpm / MAX_RPM) * LED_COUNT;
+	unsigned char pattern[LED_COUNT];
+	for(int i = 0; i < LED_COUNT; ++i)
+		pattern[i] = 1;
+	shiftPattern( pattern, LED_COUNT );
+}
 
-	for( unsigned short int i = 0; i < SHIFT_LIGHT_COUNT; ++i )
+/*
+ * Based on a given RPM reading, change the internal model of the shift lights.
+ * @param[in] percentLit - percentage of the shift lights to illuminate. 0-100
+ *
+ */
+void setRPM( uint8_t percentLit )
+{
+	if( percentLit > 100 )
+		percentLit = 100;
+	unsigned int numLights = ((float) percentLit / 100) * LED_COUNT;
+
+	if( numLights != currentNumLights)
 	{
-		if( i < numLights )
+		currentNumLights = numLights;
+
+		for( unsigned short int i = 0; i < SHIFT_LIGHT_COUNT; ++i )
 		{
-			ledStates[ i ] = 1;
-		}
-		else
-		{
-			ledStates[ i ] = 0;
+			if( i < numLights )
+			{
+				ledStates[ i ] = 1;
+			}
+			else
+			{
+				ledStates[ i ] = 0;
+			}
 		}
 	}
+}
+
+void clearRPM()
+{
+	for( uint8_t i = 0; i < SHIFT_LIGHT_COUNT; ++i )
+	{
+		ledStates[i] = 0;
+	}
+
+	updateLights();
 }
 
 /*
@@ -61,7 +130,7 @@ void setAutoUp( unsigned char state )
  * @param[in] state - 1 or 0, the given state
  *
  */
-void setCriticalError( unsigned char state )
+void setError( unsigned char state )
 {
 	ledStates[ CRITICAL_ERROR_LED ] = state;
 }
@@ -104,15 +173,56 @@ void setHold( unsigned char state )
  */
 void setGearPosition( unsigned short int position )
 {
-	if( position > NUM_GEARS )
-		position = NUM_GEARS;
+	currentGear = position;
 
-	for( unsigned short int i = SEGMENT_DISPLAY_START_LED; i < SEGMENT_DISPLAY_LED_COUNT; ++i )
+	if( position > NUM_GEARS )	
 	{
-		ledStates[ i ] = segmentPatterns[ position - 1 ][ i - SEGMENT_DISPLAY_START_LED ];
+		for( unsigned short int i = SEGMENT_DISPLAY_START_LED; i < SEGMENT_DISPLAY_LED_COUNT + SEGMENT_DISPLAY_START_LED; ++i )
+		{
+			ledStates[ i ] = 0;
+		}
+	}
+	else
+	{
+		for( unsigned short int i = SEGMENT_DISPLAY_START_LED; i < SEGMENT_DISPLAY_LED_COUNT + SEGMENT_DISPLAY_START_LED; ++i )
+		{
+			ledStates[ i ] = segmentPatterns[ position ][ i - SEGMENT_DISPLAY_START_LED ];
+		}
 	}
 }
 
+void write7Seg( int s0, int s1, int s2, int s3, int s4, int s5, int s6, int s7 )
+{
+	uint8_t pattern[] = { s0, s1, s2, s3, s4, s5, s6, s7 };
+	for( uint8_t i = SEGMENT_DISPLAY_START_LED; i < SEGMENT_DISPLAY_LED_COUNT + SEGMENT_DISPLAY_START_LED; ++i )
+	{
+		ledStates[ i ] = pattern[ i - SEGMENT_DISPLAY_START_LED ];
+	}
+	updateLights();
+}
+
+void lightShow()
+{
+	clearRPM();
+	setAutoUp(0);
+	updateLights();
+	for( uint8_t i = 0; i < SHIFT_LIGHT_COUNT/2; ++i )
+	{
+		ledStates[SHIFT_LIGHT_COUNT/2+i] = 1;
+		ledStates[SHIFT_LIGHT_COUNT/2-i] = 1;
+		updateLights();
+		_delay_ms(5);
+	}
+	setAutoUp(1);
+	updateLights();
+	_delay_ms(5);
+	setAutoUp(0);
+	updateLights();
+}
+
+/*
+ * For flexing
+ */
 void writeBinary( uint32_t num )
 {
 	uint8_t pos = 0;

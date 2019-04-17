@@ -3,9 +3,11 @@
 
 #include "dashModel.h"
 
+#define MAX_RPM 10500
+
 typedef struct
 {
-	uint16_t RPM;
+	uint8_t RPM;
 	uint8_t gear;
 	uint8_t error: 1;
 	uint8_t warning: 1;
@@ -14,8 +16,8 @@ typedef struct
 	uint8_t autoUp: 1;
 } LightModel;
 
-void createLightModel( LightModel * lightModel, DashModel * dashModel );
+void updateLightModel( LightModel* lightModel, DashModel * dashModel );
 
-uint8_t compareLightModel( LightModel * a, LightModel * b );
+void defaultLightModel( LightModel* lightModel );
 
 #endif // LIGHTMODEL_H
