@@ -21,8 +21,8 @@
 #define WATERT_LSB 3
 #define OILP_LSB 4
 #define GEAR_LSB 5
-#define BATT_MSB 6
-#define BATT_LSB 7
+#define DRS_LSB 6
+#define AUTOUP_LSB 7
 
 // ECU_MSG_2
 #define TOILP_MSB 0

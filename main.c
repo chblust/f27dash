@@ -28,8 +28,8 @@ void writeLightModel( LightModel * lightModel )
 	setError( lightModel->error );
 	setWarning( lightModel->warning );
 	//setHold( lightModel->hold );
-	//setDRS( lightModel->DRS );
-	//setAutoUp( lightModel->autoUp );
+	setDRS( lightModel->DRS );
+	setAutoUp( lightModel->autoUp );
 
 	// Tell the shift registers to update their outputs.
 	updateLights();
@@ -104,7 +104,8 @@ void F27()
 
 int main( void )
 {
-	CCSLS();
+	//CCSLS();
+	F27();
 	// Read light thresholds and such from flash
 	initializeConfiguration();
 

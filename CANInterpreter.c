@@ -45,7 +45,9 @@ static void processECU1( CANMessage * message, DashModel * dashModel )
 
 	dashModel->gear = message->data[GEAR_LSB];
 
-	dashModel->voltage = (message->data[BATT_MSB] << 8) | message->data[BATT_LSB];
+	dashModel->DRS = (message->data[DRS_LSB]);
+
+	dashModel->autoUp = (message->data[AUTOUP_LSB]);
 }
 
 static void processECU2( CANMessage* message, DashModel* dashModel )
