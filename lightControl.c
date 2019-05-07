@@ -84,7 +84,7 @@ void setRPM( uint8_t percentLit )
 {
 	if( percentLit > 100 )
 		percentLit = 100;
-	unsigned int numLights = ((float) percentLit / 100) * LED_COUNT;
+	unsigned int numLights = ((float) percentLit / 100) * SHIFT_LIGHT_COUNT;
 
 	if( numLights != currentNumLights)
 	{

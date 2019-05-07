@@ -3,12 +3,13 @@
 
 static void processECU1( CANMessage * message, DashModel * dashModel );
 static void processECU2( CANMessage * message, DashModel * dashModel );
-
+//static void processECU3( CANMessage * message, DashModel * dashModel );
 
 static MessageHandler messageHandlers[] = 
 {
 	{ ECU_MSG_1, processECU1 },
-	{ ECU_MSG_2, processECU2 }
+	{ ECU_MSG_2, processECU2 },
+	//{ 0x69, processECU3 }
 };
 
 /*
@@ -35,7 +36,12 @@ void processIncomingMessage( CANMessage * message, DashModel * dashModel )
  */
 static void processECU1( CANMessage * message, DashModel * dashModel )
 {
-	dashModel->RPM = (message->data[RPM_MSB] << 8) | message->data[RPM_LSB];
+	uint16_t rpm = (message->data[RPM_MSB] << 8) | message->data[RPM_LSB];
+	if (rpm < 1000)
+		rpm = 0;
+	else
+		rpm -= 1000;
+	dashModel->RPM = rpm;
 
 	dashModel->oilTemperature = message->data[OILT_LSB];
 
@@ -58,3 +64,8 @@ static void processECU2( CANMessage* message, DashModel* dashModel )
 
 	dashModel->lambdaControl = message->data[ LCTL ];
 }
+
+/*static void processECU3( CANMessage * message, DashModel * dashModel )
+{
+	dashModel->RPM = (message->data[0]) | (message->data[1] << 8);
+}*/

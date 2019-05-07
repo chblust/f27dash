@@ -129,6 +129,7 @@ int main( void )
 	// Configure receive MObs with single message filters in the CAN controller.
 	listenForMessage( ECU_MSG_1, 8 );
 	listenForMessage( ECU_MSG_2, 8 );
+	//listenForMessage( 0x69, 8 );
 	listenForMessage( CONFIGURATION_MSG, 8 );
 
 	// Default the shift lights.

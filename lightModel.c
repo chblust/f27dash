@@ -14,14 +14,18 @@
 void updateLightModel( LightModel * lightModel, DashModel * dashModel )
 {
 	// Don't light up any shift lights if the RPM is below the configured value
-	if( dashModel->RPM < getShiftLightStart() )
+	if( dashModel->RPM < 1000)//getShiftLightStart() )
 	{
 		lightModel->RPM = 0;
 	}
 	else
 	{
 		// Simple linear function for the shift lights
-		lightModel->RPM = 100 * ((float)(dashModel->RPM-getShiftLightStart())/(MAX_RPM - getShiftLightStart()));
+		//lightModel->RPM = 100 * ((float)(dashModel->RPM-getShiftLightStart())/(MAX_RPM - getShiftLightStart()));
+		
+		// 100 C - 540 C
+		// Mod for using shift lights as brake temp indication
+		lightModel->RPM = 100 * ((float)(dashModel->RPM-1000)/(8500-1000));
 	}
 
 	lightModel->gear = dashModel->gear;
